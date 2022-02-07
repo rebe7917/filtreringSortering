@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <style>
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      img {
+        max-width: 100%;
+        height: auto;
+      }
+      section {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 10px;
+      }
+      article {
+        border: 1px solid #000;
+        padding: 10px;
+        border-radius: 5px;
+      }
+      h1 {
+        display: flex;
+        justify-content: center;
+      }
+      nav {
+        display: flex;
+        justify-content: center;
+        gap: 0.2rem;
+        padding: 0.2rem;
+        margin: 0.2rem;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>Medlemmer</h1>
+      <nav>
+        <button data-troende="alle" class="valgt">Alle</button>
+        <button data-troende="ja">Troende</button>
+        <button data-troende="nej">Ikke troende</button>
+        <button data-troende="tvivler">Tvivler</button>
+      </nav>
+      <section id="liste"></section>
+      <template>
+        <article>
+          <h3 class="navn"></h3>
+         <img class="billede" src="" alt="billede">
+          <p class="troende"></p>
+          <p class="email"></p>
+        </article>
+      </template>
+    </main>
+
+    <script>
+      const header = document.querySelector("h1");
+      const url ="https://tema7-b1cc.restdb.io/rest/medlemmer";
+      const myHeaders = {
+        headers: {
+          "x-apikey": "61fcf8e13f215f310a37be87",
+        },
+      };
+      //start();
+      addEventListener("load", start);
+      let personer;
+      let filter = "alle";
+      // første funktion der kaldes efter DOM er loaded
+      function start() {
+        console.log("start");
+        const filterKnapper = document.querySelectorAll("nav button");
+        filterKnapper.forEach((knap) =>
+          knap.addEventListener("click", filterPersoner)
+        );
+        loadJSON();
+      }
+      //eventlistner knyttet til knapperne der vælger, hvad for et filter der er aktivt
+      function filterPersoner() {
+        filter = this.dataset.troende; //sæt variablel #filter" til værdien af data-troende på den knap der er klikket på
+        document.querySelector(".valgt").classList.remove("valgt");
+        this.classList.add("valgt");
+
+        visPersoner(); //kald funktionen visPersoner efter det nye filter er sat
+        header.textContent = this.textContent;
+      }
+
+      async function loadJSON() {
+        const JSONdata = await fetch(url, myHeaders);
+
+        personer = await JSONdata.json();
+        console.log("personer", personer);
+        visPersoner();
+      }
+      //funktion der viser personer i liste view
+      function visPersoner() {
+        const dest = document.querySelector("#liste"); //container til articles med en person
+        const skabelon = document.querySelector("template").content; //select indhold af html skabelon (article)
+        dest.textContent = "";
+        personer.forEach((person) => {
+          //loop igennem json (personer)
+          console.log(person.troende);
+          if (filter == person.troende || filter == "alle") {
+            const klon = skabelon.cloneNode(true);
+            klon.querySelector(".navn").textContent =
+              person.fornavn + " " + person.efternavn;
+            klon.querySelector(".troende").textContent =
+              "troende: " + person.troende + " ";
+            klon.querySelector(".billede").src = "faces/" + person.profilbillede;
+            dest.appendChild(klon);
+          }
+        });
+      }
+    </script>
+  </body>
+</html>
